@@ -46,7 +46,7 @@
 //!     pub groups: Vec<&'static str>,
 //! }
 //!
-//! let defaults = User {
+//! let mut defaults = User {
 //!     name: "",
 //!     location: Some("Internet"),
 //!     groups: vec!["rust"],
@@ -56,7 +56,7 @@
 //!     location: None,
 //!     groups: vec!["mascot"],
 //! };
-//! ferris.merge(defaults);
+//! ferris.merge(&mut defaults);
 //!
 //! assert_eq!("Ferris", ferris.name);
 //! assert_eq!(Some("Internet"), ferris.location);
@@ -108,7 +108,7 @@ pub use merge2_derive::*;
 ///     s: "some ignored value".to_owned(),
 ///     flag: false,
 /// };
-/// val.merge(S {
+/// val.merge(&mut S {
 ///     option: Some(42),
 ///     s: "some other ignored value".to_owned(),
 ///     flag: true,
@@ -137,7 +137,7 @@ pub use merge2_derive::*;
 ///     option2: Some(1),
 ///     option3: None,
 /// };
-/// val.merge(S {
+/// val.merge(&mut S {
 ///     option1: Some(2),
 ///     option2: Some(2),
 ///     option3: None,
@@ -150,15 +150,15 @@ pub use merge2_derive::*;
 /// ```
 pub trait Merge {
     /// Merge another object into this object.
-    fn merge(&mut self, other: Self);
+    fn merge(&mut self, other: &mut Self);
 }
 
 impl<T> Merge for Option<T> {
     /// Overwrite `option` only if it is `None`
     #[inline]
-    fn merge(&mut self, right: Self) {
+    fn merge(&mut self, right: &mut Self) {
         if self.is_none() {
-            *self = right;
+            *self = right.take();
         }
     }
 }
@@ -167,10 +167,10 @@ impl<T> Merge for Option<T> {
 pub mod option {
     /// On conflict, recursively merge the elements.
     #[inline]
-    pub fn recursive<T: super::Merge>(left: &mut Option<T>, right: Option<T>) {
-        if let Some(new) = right {
+    pub fn recursive<T: super::Merge>(left: &mut Option<T>, right: &mut Option<T>) {
+        if let Some(mut new) = right.take() {
             if let Some(original) = left {
-                original.merge(new);
+                original.merge(&mut new);
             } else {
                 *left = Some(new);
             }
@@ -182,7 +182,7 @@ macro_rules! skip_merge {
     ($typ: ident) => {
         impl Merge for $typ {
             #[inline(always)]
-            fn merge(&mut self, _: Self) {}
+            fn merge(&mut self, _: &mut Self) {}
         }
     };
     ($($typ: ident),*) => {
@@ -196,17 +196,17 @@ skip_merge!(u8, i8, u16, i16, u32, i32, u64, i64, usize, isize, u128, i128, f32,
 pub mod bool {
     /// Overwrite left with right if the value of left is false.
     #[inline]
-    pub fn overwrite_false(left: &mut bool, right: bool) {
+    pub fn overwrite_false(left: &mut bool, right: &mut bool) {
         if !*left {
-            *left = right;
+            *left = *right;
         }
     }
 
     /// Overwrite left with right if the value of left is true.
     #[inline]
-    pub fn overwrite_true(left: &mut bool, right: bool) {
+    pub fn overwrite_true(left: &mut bool, right: &mut bool) {
         if *left {
-            *left = right;
+            *left = *right;
         }
     }
 }
@@ -218,15 +218,15 @@ pub mod bool {
 pub mod num {
     /// Set left to the saturated some of left and right.
     #[inline]
-    pub fn saturating_add<T: num_traits::SaturatingAdd>(left: &mut T, right: T) {
-        *left = left.saturating_add(&right);
+    pub fn saturating_add<T: num_traits::SaturatingAdd>(left: &mut T, right: &mut T) {
+        *left = left.saturating_add(right);
     }
 
     /// Overwrite left with right if the value of left is zero.
     #[inline]
-    pub fn overwrite_zero<T: num_traits::Zero>(left: &mut T, right: T) {
+    pub fn overwrite_zero<T: num_traits::Zero + Clone>(left: &mut T, right: &mut T) {
         if left.is_zero() {
-            *left = right;
+            *left = right.clone();
         }
     }
 }
@@ -237,17 +237,17 @@ pub mod ord {
 
     /// Set left to the maximum of left and right.
     #[inline]
-    pub fn max<T: cmp::Ord>(left: &mut T, right: T) {
+    pub fn max<T: cmp::Ord + Clone>(left: &mut T, right: &mut T) {
         if cmp::Ord::cmp(left, &right) == cmp::Ordering::Less {
-            *left = right;
+            *left = right.clone();
         }
     }
 
     /// Set left to the minimum of left and right.
     #[inline]
-    pub fn min<T: cmp::Ord>(left: &mut T, right: T) {
+    pub fn min<T: cmp::Ord + Clone>(left: &mut T, right: &mut T) {
         if cmp::Ord::cmp(left, &right) == cmp::Ordering::Greater {
-            *left = right;
+            *left = right.clone();
         }
     }
 }
@@ -255,7 +255,7 @@ pub mod ord {
 #[cfg(feature = "std")]
 impl Merge for &str {
     #[inline]
-    fn merge(&mut self, right: Self) {
+    fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
             *self = right;
         }
@@ -265,9 +265,9 @@ impl Merge for &str {
 #[cfg(feature = "std")]
 impl Merge for String {
     #[inline]
-    fn merge(&mut self, right: Self) {
+    fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = right;
+            *self = core::mem::replace(right, String::new());
         }
     }
 }
@@ -275,9 +275,9 @@ impl Merge for String {
 #[cfg(feature = "std")]
 impl<T> Merge for Vec<T> {
     #[inline]
-    fn merge(&mut self, right: Self) {
+    fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = right;
+            *self = core::mem::replace(right, Vec::new());
         }
     }
 }
@@ -289,19 +289,19 @@ impl<T> Merge for Vec<T> {
 pub mod vec {
     /// Append the contents of right to left.
     #[inline]
-    pub fn append<T>(left: &mut Vec<T>, mut right: Vec<T>) {
+    pub fn append<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
         if left.is_empty() {
-            *left = right;
+            *left = core::mem::replace(right, Vec::new());
         } else {
-            left.append(&mut right);
+            left.append(right);
         }
     }
 
     /// Prepend the contents of right to left.
     #[inline]
-    pub fn prepend<T>(left: &mut Vec<T>, mut right: Vec<T>) {
+    pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
         right.append(left);
-        *left = right;
+        *left = core::mem::replace(right, Vec::new());
     }
 }
 
@@ -310,9 +310,9 @@ use std::collections::HashMap;
 #[cfg(feature = "std")]
 impl<K, V> Merge for HashMap<K, V> {
     #[inline]
-    fn merge(&mut self, right: Self) {
+    fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = right;
+            *self = core::mem::replace(right, HashMap::new());
         }
     }
 }
@@ -328,8 +328,9 @@ pub mod hashmap {
     /// On conflict, merge elements from `right` to `left`.
     ///
     /// In other words, this gives precedence to `left`.
-    pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: HashMap<K, V>) {
-        for (k, v) in right {
+    pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
+        let map = core::mem::replace(right, HashMap::new());
+        for (k, v) in map {
             left.entry(k).or_insert(v);
         }
     }
@@ -338,17 +339,21 @@ pub mod hashmap {
     ///
     /// In other words, this gives precedence to `right`.
     #[inline]
-    pub fn replace<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: HashMap<K, V>) {
-        left.extend(right)
+    pub fn replace<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
+        left.extend(core::mem::replace(right, HashMap::new()))
     }
 
     /// On conflict, recursively merge the elements.
-    pub fn recursive<K: Eq + Hash, V: crate::Merge>(left: &mut HashMap<K, V>, right: HashMap<K, V>) {
+    pub fn recursive<K: Eq + Hash, V: crate::Merge>(
+        left: &mut HashMap<K, V>,
+        right: &mut HashMap<K, V>,
+    ) {
         use std::collections::hash_map::Entry;
 
-        for (k, v) in right {
+        let map = core::mem::replace(right, HashMap::new());
+        for (k, mut v) in map {
             match left.entry(k) {
-                Entry::Occupied(mut existing) => existing.get_mut().merge(v),
+                Entry::Occupied(mut existing) => existing.get_mut().merge(&mut v),
                 Entry::Vacant(empty) => {
                     empty.insert(v);
                 }

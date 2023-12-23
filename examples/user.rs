@@ -10,7 +10,7 @@ struct User {
 }
 
 fn main() {
-    let defaults = User {
+    let mut defaults = User {
         name: "",
         location: Some("Internet"),
         groups: vec!["rust"],
@@ -20,7 +20,7 @@ fn main() {
         location: None,
         groups: vec!["mascot"],
     };
-    ferris.merge(defaults);
+    ferris.merge(&mut defaults);
 
     assert_eq!("Ferris", ferris.name);
     assert_eq!(Some("Internet"), ferris.location);

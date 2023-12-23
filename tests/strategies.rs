@@ -2,8 +2,8 @@
 
 use merge2::Merge;
 
-fn test<T: std::fmt::Debug + Merge + PartialEq>(expected: T, mut left: T, right: T) {
-    left.merge(right);
+fn test<T: std::fmt::Debug + Merge + PartialEq>(expected: T, mut left: T, mut right: T) {
+    left.merge(&mut right);
     assert_eq!(expected, left);
 }
 

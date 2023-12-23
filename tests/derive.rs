@@ -2,8 +2,8 @@
 
 use merge2::Merge;
 
-fn test<T: std::fmt::Debug + Merge + PartialEq>(expected: T, mut left: T, right: T) {
-    left.merge(right);
+fn test<T: std::fmt::Debug + Merge + PartialEq>(expected: T, mut left: T, mut right: T) {
+    left.merge(&mut right);
     assert_eq!(expected, left);
 }
 
@@ -291,8 +291,8 @@ fn test_strategy_usize_add() {
         }
     }
 
-    fn add(left: &mut usize, right: usize) {
-        *left = *left + right;
+    fn add(left: &mut usize, right: &mut usize) {
+        *left = *left + *right;
     }
 
     test(S::new(0), S::new(0), S::new(0));
@@ -315,8 +315,8 @@ fn test_strategy_vec_append() {
         }
     }
 
-    fn append(left: &mut Vec<usize>, mut right: Vec<usize>) {
-        left.append(&mut right);
+    fn append(left: &mut Vec<usize>, right: &mut Vec<usize>) {
+        left.append(right);
     }
 
     test(

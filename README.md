@@ -24,7 +24,7 @@ struct User {
     pub groups: Vec<&'static str>,
 }
 
-let defaults = User {
+let mut defaults = User {
     name: "",
     location: Some("Internet"),
     groups: vec!["rust"],
@@ -34,7 +34,7 @@ let mut ferris = User {
     location: None,
     groups: vec!["mascot"],
 };
-ferris.merge(defaults);
+ferris.merge(&mut defaults);
 
 assert_eq!("Ferris", ferris.name);
 assert_eq!(Some("Internet"), ferris.location);

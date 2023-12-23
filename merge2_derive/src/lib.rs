@@ -35,7 +35,7 @@ fn impl_merge(input: syn::DeriveInput, dummy: &mut TokenStream) -> manyhow::Resu
 
     *dummy = quote! {
         impl ::merge2::Merge for #name {
-            fn merge(&mut self, other: Self) {
+            fn merge(&mut self, other: &mut Self) {
                 unimplemented!()
             }
         }
@@ -57,7 +57,7 @@ fn impl_merge_for_struct(
 
     quote! {
         impl ::merge2::Merge for #name {
-            fn merge(&mut self, other: Self) {
+            fn merge(&mut self, other: &mut Self) {
                 #assignments
             }
         }
@@ -79,11 +79,11 @@ fn gen_assignment(field: &Field, default_strategy: &FieldAttrs) -> TokenStream {
 
     let name = &field.name;
     if let Some(strategy) = &field.attrs.strategy {
-        quote_spanned!(strategy.span()=> #strategy(&mut self.#name, other.#name);)
+        quote_spanned!(strategy.span()=> #strategy(&mut self.#name, &mut other.#name);)
     } else if let Some(default) = &default_strategy.strategy {
-        quote_spanned!(default.span()=> #default(&mut self.#name, other.#name);)
+        quote_spanned!(default.span()=> #default(&mut self.#name, &mut other.#name);)
     } else {
-        quote_spanned!(field.span=> ::merge2::Merge::merge(&mut self.#name, other.#name);)
+        quote_spanned!(field.span=> ::merge2::Merge::merge(&mut self.#name, &mut other.#name);)
     }
 }
 

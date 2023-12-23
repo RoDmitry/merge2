@@ -30,9 +30,9 @@ fn get_env() -> Args {
 
 fn main() {
     let mut args = Args::from_args();
-    args.merge(get_env());
-    if let Some(config) = get_config() {
-        args.merge(config);
+    args.merge(&mut get_env());
+    if let Some(mut config) = get_config() {
+        args.merge(&mut config);
     }
     println!("{:?}", args);
 }
