@@ -5,7 +5,7 @@ extern crate proc_macro;
 use manyhow::bail;
 use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
-use syn::Token;
+use syn::{Generics, Token};
 
 struct Field {
     name: syn::Member,
@@ -33,8 +33,9 @@ fn impl_merge(input: syn::DeriveInput, dummy: &mut TokenStream) -> manyhow::Resu
     let name = &input.ident;
     let default_strategy = FieldAttrs::from(input.attrs.iter());
 
+    let (impl_generics, orig_ty_generics, where_clause) = input.generics.split_for_impl();
     *dummy = quote! {
-        impl ::merge2::Merge for #name {
+        impl #impl_generics ::merge2::Merge for #name #orig_ty_generics #where_clause {
             fn merge(&mut self, other: &mut Self) {
                 unimplemented!()
             }
@@ -42,9 +43,14 @@ fn impl_merge(input: syn::DeriveInput, dummy: &mut TokenStream) -> manyhow::Resu
     };
 
     if let syn::Data::Struct(syn::DataStruct { ref fields, .. }) = input.data {
-        Ok(impl_merge_for_struct(name, fields, default_strategy))
+        Ok(impl_merge_for_struct(
+            name,
+            fields,
+            default_strategy,
+            input.generics,
+        ))
     } else {
-        bail!("merge::Merge can only be derived for structs")
+        bail!("merge2::Merge can only be derived for structs")
     }
 }
 
@@ -52,11 +58,13 @@ fn impl_merge_for_struct(
     name: &syn::Ident,
     fields: &syn::Fields,
     default_strategy: FieldAttrs,
+    generics: Generics,
 ) -> TokenStream {
     let assignments = gen_assignments(fields, default_strategy);
+    let (impl_generics, orig_ty_generics, where_clause) = generics.split_for_impl();
 
     quote! {
-        impl ::merge2::Merge for #name {
+        impl #impl_generics ::merge2::Merge for #name #orig_ty_generics #where_clause {
             fn merge(&mut self, other: &mut Self) {
                 #assignments
             }

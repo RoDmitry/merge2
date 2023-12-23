@@ -292,7 +292,7 @@ fn test_strategy_usize_add() {
     }
 
     fn add(left: &mut usize, right: &mut usize) {
-        *left = *left + *right;
+        *left += *right;
     }
 
     test(S::new(0), S::new(0), S::new(0));
@@ -548,4 +548,46 @@ fn test_default_strategy() {
         #[merge(strategy = ::merge2::num::saturating_add)] u8,
         #[merge(strategy = Merge::merge)] N,
     );
+}
+
+#[test]
+fn test_generics() {
+    #[derive(Debug, Merge, PartialEq)]
+    struct TupleWithGenerics<A: core::fmt::Display, B: core::fmt::Debug>(Option<A>, Option<B>);
+
+    #[derive(Debug, Merge, PartialEq)]
+    struct TupleWithWhere<A, B>(Option<A>, Option<B>)
+    where
+        A: core::fmt::Display,
+        B: core::fmt::Debug;
+
+    #[derive(Debug, Merge, PartialEq)]
+    struct TupleWithBoth<A: core::fmt::Display, B>(Option<A>, Option<B>)
+    where
+        B: core::fmt::Debug;
+
+    #[derive(Debug, Merge, PartialEq)]
+    struct StructWithGenerics<A: core::fmt::Display, B: core::fmt::Debug> {
+        a: Option<A>,
+        b: Option<B>,
+    }
+
+    #[derive(Debug, Merge, PartialEq)]
+    struct StructWithWhere<A, B>
+    where
+        A: core::fmt::Display,
+        B: core::fmt::Debug,
+    {
+        a: Option<A>,
+        b: Option<B>,
+    }
+
+    #[derive(Debug, Merge, PartialEq)]
+    struct StructWithBoth<A: core::fmt::Display, B>
+    where
+        B: core::fmt::Debug,
+    {
+        a: Option<A>,
+        b: Option<B>,
+    }
 }

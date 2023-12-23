@@ -153,6 +153,21 @@ pub trait Merge {
     fn merge(&mut self, other: &mut Self);
 }
 
+// Merge strategies applicable to types implementing Default
+pub mod default {
+    /// Overwrite `left` with `right` regardless of their values.
+    pub fn overwrite_any<T: Default>(left: &mut T, right: &mut T) {
+        *left = core::mem::take(right);
+    }
+
+    /// Overwrite `left` with `right` if the value of `left` is equal to the default for the type.
+    pub fn overwrite_default<T: Default + PartialEq>(left: &mut T, right: &mut T) {
+        if *left == T::default() {
+            *left = core::mem::take(right);
+        }
+    }
+}
+
 impl<T> Merge for Option<T> {
     /// Overwrite `option` only if it is `None`
     #[inline]
@@ -238,7 +253,7 @@ pub mod ord {
     /// Set left to the maximum of left and right.
     #[inline]
     pub fn max<T: cmp::Ord + Clone>(left: &mut T, right: &mut T) {
-        if cmp::Ord::cmp(left, &right) == cmp::Ordering::Less {
+        if cmp::Ord::cmp(left, right) == cmp::Ordering::Less {
             *left = right.clone();
         }
     }
@@ -246,7 +261,7 @@ pub mod ord {
     /// Set left to the minimum of left and right.
     #[inline]
     pub fn min<T: cmp::Ord + Clone>(left: &mut T, right: &mut T) {
-        if cmp::Ord::cmp(left, &right) == cmp::Ordering::Greater {
+        if cmp::Ord::cmp(left, right) == cmp::Ordering::Greater {
             *left = right.clone();
         }
     }
@@ -257,7 +272,7 @@ impl Merge for &str {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = right;
+            *self = core::mem::take(right);
         }
     }
 }
@@ -267,8 +282,25 @@ impl Merge for String {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::replace(right, String::new());
+            *self = core::mem::take(right);
         }
+    }
+}
+
+/// Merge strategies for strings.
+///
+/// These strategies are only available if the `std` feature is enabled.
+#[cfg(feature = "std")]
+pub mod string {
+    /// Append the contents of right to left.
+    pub fn append(left: &mut String, right: &mut str) {
+        left.push_str(right);
+    }
+
+    /// Prepend the contents of right to left.
+    pub fn prepend(left: &mut String, right: &mut String) {
+        right.push_str(left);
+        *left = core::mem::take(right);
     }
 }
 
@@ -277,7 +309,7 @@ impl<T> Merge for Vec<T> {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::replace(right, Vec::new());
+            *self = core::mem::take(right);
         }
     }
 }
@@ -291,7 +323,7 @@ pub mod vec {
     #[inline]
     pub fn append<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
         if left.is_empty() {
-            *left = core::mem::replace(right, Vec::new());
+            *left = core::mem::take(right);
         } else {
             left.append(right);
         }
@@ -301,7 +333,7 @@ pub mod vec {
     #[inline]
     pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
         right.append(left);
-        *left = core::mem::replace(right, Vec::new());
+        *left = core::mem::take(right);
     }
 }
 
@@ -312,7 +344,7 @@ impl<K, V> Merge for HashMap<K, V> {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::replace(right, HashMap::new());
+            *self = core::mem::take(right);
         }
     }
 }
@@ -329,7 +361,7 @@ pub mod hashmap {
     ///
     /// In other words, this gives precedence to `left`.
     pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
-        let map = core::mem::replace(right, HashMap::new());
+        let map = core::mem::take(right);
         for (k, v) in map {
             left.entry(k).or_insert(v);
         }
@@ -340,23 +372,38 @@ pub mod hashmap {
     /// In other words, this gives precedence to `right`.
     #[inline]
     pub fn replace<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
-        left.extend(core::mem::replace(right, HashMap::new()))
+        left.extend(core::mem::take(right))
     }
 
     /// On conflict, recursively merge the elements.
-    pub fn recursive<K: Eq + Hash, V: crate::Merge>(
+    pub fn recursive<K: Eq + Hash, V: super::Merge>(
         left: &mut HashMap<K, V>,
         right: &mut HashMap<K, V>,
     ) {
         use std::collections::hash_map::Entry;
 
-        let map = core::mem::replace(right, HashMap::new());
+        let map = core::mem::take(right);
         for (k, mut v) in map {
             match left.entry(k) {
                 Entry::Occupied(mut existing) => existing.get_mut().merge(&mut v),
                 Entry::Vacant(empty) => {
                     empty.insert(v);
                 }
+            }
+        }
+    }
+
+    /// Merge recursively elements only if the key is present in `left` and `right`.
+    pub fn intersection<K: Eq + Hash, V: super::Merge>(
+        left: &mut HashMap<K, V>,
+        right: &mut HashMap<K, V>,
+    ) {
+        use std::collections::hash_map::Entry;
+
+        let map = core::mem::take(right);
+        for (k, mut v) in map {
+            if let Entry::Occupied(mut existing) = left.entry(k) {
+                existing.get_mut().merge(&mut v);
             }
         }
     }
