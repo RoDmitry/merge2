@@ -1,20 +1,20 @@
-//! Provides [`Merge`][], a trait for objects that can be merged.
+//! Provides [`Merge`][] trait that can be used to merge structs into single by it's values:
 //!
 //! ```
 //! trait Merge {
-//!     fn merge(&mut self, other: Self);
+//!     fn merge(&mut self, other: &mut Self);
 //! }
 //! ```
 //!
 //! # Usage
 //!
-//! The [`Merge`][] trait can be used to merge two objects of the same type into one.  The intended
-//! use case is merging configuration from different sources, for example environment variables,
+//! The [`Merge`][] trait can be used to merge two structs into single by values. The example
+//! use case is merging configuration from different sources: environment variables,
 //! multiple configuration files and command-line arguments, see the [`args.rs`][] example.
 //!
-//! `Merge` can be derived for structs. When deriving the `Merge` trait for a struct, you can
-//! provide custom merge strategies for the fields that don’t implement Merge`.
-//! A merge strategy is a function with the signature `fn merge<T>(left: &mut T, right: T)`
+//! `Merge` can be derived for structs. Also you can provide custom merge strategies
+//! for any fields that don’t implement `Merge` trait.
+//! A merge strategy is a function with the signature `fn merge<T>(left: &mut T, right: &mut T)`
 //! that merges `right` into `left`. The submodules of this crate provide strategies for the
 //! most common types, but you can also define your own strategies.
 //!
@@ -64,7 +64,7 @@
 //! ```
 //!
 //! [`Merge`]: trait.Merge.html
-//! [`args.rs`]: https://git.sr.ht/~ireas/merge-rs/tree/master/examples/args.rs
+//! [`args.rs`]: https://github.com/RoDmitry/merge2/blob/main/examples/args.rs
 
 #![cfg_attr(not(feature = "std"), no_std)]
 

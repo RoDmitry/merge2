@@ -1,10 +1,10 @@
 # Merge2
 
-Provides the `Merge` trait that can be used to merge structs into single by it's values:
+Provides `Merge` trait that can be used to merge structs into single by it's values:
 
 ```rust
 trait Merge {
-    fn merge(&mut self, other: Self);
+    fn merge(&mut self, other: &mut Self);
 }
 ```
 
@@ -41,12 +41,12 @@ assert_eq!(Some("Internet"), ferris.location);
 assert_eq!(vec!["mascot", "rust"], ferris.groups);
 ```
 
-A merge strategy is a function with the signature `fn merge<T>(left: &mut T, right: T)`
+A merge strategy is a function with the signature `fn merge<T>(left: &mut T, right: &mut T)`
 that merges `right` into `left`. The `merge2` crate provides strategies
 for the most common types, but you can also define your own strategies.
 
-The trait can be used to merge configuration from different sources, for
-example environment variables, multiple configuration files and command-line
+The trait can be used to merge configuration from different sources:
+environment variables, multiple configuration files and command-line
 arguments, see the `args.rs` example.
 
 ## Features
