@@ -1,12 +1,12 @@
 //! Provides [`Merge`][], a trait for objects that can be merged.
 //!
-//! # Usage
-//!
 //! ```
 //! trait Merge {
 //!     fn merge(&mut self, other: Self);
 //! }
 //! ```
+//!
+//! # Usage
 //!
 //! The [`Merge`][] trait can be used to merge two objects of the same type into one.  The intended
 //! use case is merging configuration from different sources, for example environment variables,

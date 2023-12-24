@@ -1,0 +1,44 @@
+name: Rust
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+     - 'src/**'
+  pull_request:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  x86:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Rust Version
+        run: rustc -V
+
+      - name: Format
+        run: cargo fmt -- --check
+
+      - name: Cargo check
+        run: cargo check --verbose
+
+      - name: Clippy
+        run: cargo clippy --verbose -- -Dwarnings
+
+      - name: Std
+        run: cargo test --verbose
+
+      - name: Prepare
+        # gcc-multilib is needed for i686
+        run: sudo apt-get update && sudo apt-get install -y gcc-multilib
+
+      - name: Install i686 target
+        run: rustup target add i686-unknown-linux-gnu
+      - name: i686 (32 bits)
+        run: cargo test --target=i686-unknown-linux-gnu --verbose

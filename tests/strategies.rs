@@ -40,6 +40,7 @@ fn test_option_overwrite_none() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn test_option_recursive() {
     #[derive(Debug, Merge, PartialEq)]
     struct N(#[merge(strategy = ::merge2::num::saturating_add)] u8);
