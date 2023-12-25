@@ -74,9 +74,13 @@ fn impl_merge_for_struct(
 
 fn gen_assignments(fields: &syn::Fields, default_strategy: FieldAttrs) -> TokenStream {
     let fields = fields.iter().enumerate().map(Field::from);
-    let assignments = fields
-        .filter(|f| !f.attrs.skip)
-        .map(|f| gen_assignment(&f, &default_strategy));
+    let assignments = fields.filter_map(|f| {
+        if !f.attrs.skip {
+            Some(gen_assignment(&f, &default_strategy))
+        } else {
+            None
+        }
+    });
     quote! {
         #( #assignments )*
     }
