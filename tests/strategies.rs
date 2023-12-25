@@ -8,6 +8,28 @@ fn test<T: std::fmt::Debug + Merge + PartialEq>(expected: T, mut left: T, mut ri
 }
 
 #[test]
+fn test_any_overwrite() {
+    #[derive(Debug, Merge, PartialEq)]
+    struct S(#[merge(strategy = ::merge2::any::overwrite)] u8);
+
+    test(S(2), S(1), S(2));
+    test(S(2), S(0), S(2));
+    test(S(0), S(1), S(0));
+    test(S(0), S(0), S(0));
+}
+
+#[test]
+fn test_any_overwrite_default() {
+    #[derive(Debug, Merge, PartialEq)]
+    struct S(#[merge(strategy = ::merge2::any::overwrite_default)] u8);
+
+    test(S(1), S(1), S(2));
+    test(S(2), S(0), S(2));
+    test(S(1), S(1), S(0));
+    test(S(0), S(0), S(0));
+}
+
+#[test]
 fn test_any_swap() {
     #[derive(Debug, Merge, PartialEq)]
     struct S(#[merge(strategy = ::merge2::any::swap)] u8);
@@ -15,28 +37,6 @@ fn test_any_swap() {
     test(S(2), S(1), S(2));
     test(S(2), S(0), S(2));
     test(S(0), S(1), S(0));
-    test(S(0), S(0), S(0));
-}
-
-#[test]
-fn test_default_overwrite_any() {
-    #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::default::overwrite_any)] u8);
-
-    test(S(2), S(1), S(2));
-    test(S(2), S(0), S(2));
-    test(S(0), S(1), S(0));
-    test(S(0), S(0), S(0));
-}
-
-#[test]
-fn test_default_overwrite_default() {
-    #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::default::overwrite_default)] u8);
-
-    test(S(1), S(1), S(2));
-    test(S(2), S(0), S(2));
-    test(S(1), S(1), S(0));
     test(S(0), S(0), S(0));
 }
 

@@ -155,18 +155,9 @@ pub trait Merge: Sized {
 
 // Merge strategies applicable to any types
 pub mod any {
-    /// Swap `left` and `right` regardless of their values.
-    #[inline]
-    pub fn swap<T>(left: &mut T, right: &mut T) {
-        core::mem::swap(left, right);
-    }
-}
-
-// Merge strategies applicable to types implementing Default
-pub mod default {
     /// Overwrite `left` with `right` regardless of their values.
     #[inline]
-    pub fn overwrite_any<T: Default>(left: &mut T, right: &mut T) {
+    pub fn overwrite<T: Default>(left: &mut T, right: &mut T) {
         *left = core::mem::take(right);
     }
 
@@ -176,6 +167,12 @@ pub mod default {
         if *left == T::default() {
             core::mem::swap(left, right);
         }
+    }
+
+    /// Swap `left` and `right` regardless of their values.
+    #[inline]
+    pub fn swap<T>(left: &mut T, right: &mut T) {
+        core::mem::swap(left, right);
     }
 }
 
