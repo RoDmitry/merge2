@@ -153,6 +153,15 @@ pub trait Merge {
     fn merge(&mut self, other: &mut Self);
 }
 
+// Merge strategies applicable to any types
+pub mod any {
+    /// Swap `left` and `right` regardless of their values.
+    #[inline]
+    pub fn swap<T>(left: &mut T, right: &mut T) {
+        core::mem::swap(left, right);
+    }
+}
+
 // Merge strategies applicable to types implementing Default
 pub mod default {
     /// Overwrite `left` with `right` regardless of their values.
@@ -252,19 +261,35 @@ pub mod num {
 pub mod ord {
     use core::cmp;
 
-    /// Set left to the maximum of left and right.
+    /// Set `left` as `right` if `left` is Less than `right`, set `right` as Default
     #[inline]
-    pub fn max<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
+    pub fn max_def<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
         if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Less) {
             *left = core::mem::take(right);
         }
     }
 
-    /// Set left to the minimum of left and right.
+    /// Set `left` as `right` if `left` is Greater than `right`, set `right` as Default
     #[inline]
-    pub fn min<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
+    pub fn min_def<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
         if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Greater) {
             *left = core::mem::take(right);
+        }
+    }
+
+    /// Swap elements if `left` is Less than `right`.
+    #[inline]
+    pub fn max_swap<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
+        if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Less) {
+            core::mem::swap(left, right);
+        }
+    }
+
+    /// Swap elements if `left` is Greater than `right`.
+    #[inline]
+    pub fn min_swap<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
+        if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Greater) {
+            core::mem::swap(left, right);
         }
     }
 }

@@ -8,6 +8,17 @@ fn test<T: std::fmt::Debug + Merge + PartialEq>(expected: T, mut left: T, mut ri
 }
 
 #[test]
+fn test_any_swap() {
+    #[derive(Debug, Merge, PartialEq)]
+    struct S(#[merge(strategy = ::merge2::any::swap)] u8);
+
+    test(S(2), S(1), S(2));
+    test(S(2), S(0), S(2));
+    test(S(0), S(1), S(0));
+    test(S(0), S(0), S(0));
+}
+
+#[test]
 fn test_default_overwrite_any() {
     #[derive(Debug, Merge, PartialEq)]
     struct S(#[merge(strategy = ::merge2::default::overwrite_any)] u8);
@@ -100,9 +111,9 @@ fn test_num_overwrite_zero() {
 }
 
 #[test]
-fn test_ord_max() {
+fn test_ord_max_def() {
     #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::ord::max)] u8);
+    struct S(#[merge(strategy = ::merge2::ord::max_def)] u8);
 
     test(S(2), S(1), S(2));
     test(S(2), S(2), S(1));
@@ -113,9 +124,9 @@ fn test_ord_max() {
 }
 
 #[test]
-fn test_ord_min() {
+fn test_ord_min_def() {
     #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::ord::min)] u8);
+    struct S(#[merge(strategy = ::merge2::ord::min_def)] u8);
 
     test(S(1), S(1), S(2));
     test(S(1), S(2), S(1));
