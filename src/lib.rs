@@ -1,7 +1,7 @@
 //! Provides [`Merge`][] trait that can be used to merge structs into single by it's values:
 //!
 //! ```
-//! trait Merge {
+//! trait Merge: Sized {
 //!     fn merge(&mut self, other: &mut Self);
 //! }
 //! ```
@@ -148,7 +148,7 @@ pub use merge2_derive::*;
 ///     option3: None,
 /// }, val);
 /// ```
-pub trait Merge {
+pub trait Merge: Sized {
     /// Merge another object into this object.
     fn merge(&mut self, other: &mut Self);
 }
@@ -246,14 +246,6 @@ pub mod num {
     #[inline]
     pub fn saturating_add<T: num_traits::SaturatingAdd>(left: &mut T, right: &mut T) {
         *left = left.saturating_add(right);
-    }
-
-    /// Overwrite left with right if the value of left is zero.
-    #[inline]
-    pub fn overwrite_zero<T: num_traits::Zero + Copy>(left: &mut T, right: &mut T) {
-        if left.is_zero() {
-            *left = *right;
-        }
     }
 }
 

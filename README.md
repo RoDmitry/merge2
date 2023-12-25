@@ -3,7 +3,7 @@
 Provides `Merge` trait that can be used to merge structs into single by it's values:
 
 ```rust
-trait Merge {
+trait Merge: Sized {
     fn merge(&mut self, other: &mut Self);
 }
 ```

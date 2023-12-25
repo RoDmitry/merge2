@@ -537,7 +537,7 @@ fn test_unnamed_fields_skip() {
 }
 
 #[test]
-#[cfg(feature = "std")]
+#[cfg(all(feature = "num", feature = "std"))]
 fn test_default_strategy() {
     #[derive(Debug, Merge, PartialEq)]
     struct N(#[merge(strategy = ::merge2::num::saturating_add)] u8);

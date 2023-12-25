@@ -51,7 +51,7 @@ fn test_option_overwrite_none() {
 }
 
 #[test]
-#[cfg(feature = "std")]
+#[cfg(all(feature = "num", feature = "std"))]
 fn test_option_recursive() {
     #[derive(Debug, Merge, PartialEq)]
     struct N(#[merge(strategy = ::merge2::num::saturating_add)] u8);
@@ -97,17 +97,6 @@ fn test_num_saturating_add() {
     test(S(1), S(0), S(1));
     test(S(255), S(255), S(10));
     test(S(40), S(30), S(10));
-}
-
-#[cfg(feature = "num")]
-#[test]
-fn test_num_overwrite_zero() {
-    #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::num::overwrite_zero)] u8);
-
-    test(S(0), S(0), S(0));
-    test(S(1), S(0), S(1));
-    test(S(255), S(255), S(10));
 }
 
 #[test]
@@ -291,6 +280,7 @@ mod hashmap {
     }
 
     #[test]
+    #[cfg(feature = "num")]
     fn test_recursive() {
         #[derive(Debug, Merge, PartialEq)]
         struct N(#[merge(strategy = ::merge2::num::saturating_add)] u8);
@@ -316,6 +306,7 @@ mod hashmap {
     }
 
     #[test]
+    #[cfg(feature = "num")]
     fn test_intersection() {
         #[derive(Debug, Merge, PartialEq)]
         struct N(#[merge(strategy = ::merge2::num::saturating_add)] u8);

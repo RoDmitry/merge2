@@ -32,7 +32,7 @@ jobs:
         run: cargo clippy --verbose -- -Dwarnings
 
       - name: Std
-        run: cargo test --verbose
+        run: cargo test --verbose --all-features --workspace
 
       - name: Prepare
         # gcc-multilib is needed for i686
@@ -41,4 +41,4 @@ jobs:
       - name: Install i686 target
         run: rustup target add i686-unknown-linux-gnu
       - name: i686 (32 bits)
-        run: cargo test --target=i686-unknown-linux-gnu --verbose
+        run: cargo test --target=i686-unknown-linux-gnu --verbose --all-features --workspace

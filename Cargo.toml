@@ -1,32 +1,41 @@
 [package]
-name = "merge2"
-version = "0.1.0"
-authors = ["Dmitry Rodionov <gh@rdmtr.com>"]
-edition = "2021"
 description = "Merge structs into single by values"
-repository = "https://github.com/RoDmitry/merge2"
+exclude = [".github/*"]
 keywords = ["struct", "merge", "combine", "macros", "derive"]
-categories = ["rust-patterns"]
-license = "Apache-2.0 OR MIT"
-exclude = [".builds/*"]
+name = "merge2"
 readme = "README.md"
+version = "0.1.0"
+authors.workspace = true
+categories.workspace = true
+documentation.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[workspace.package]
+authors = ["Dmitry Rodionov <gh@rdmtr.com>"]
+categories = ["rust-patterns"]
+documentation = "https://docs.rs/merge2/"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/RoDmitry/merge2"
+
+[lib]
+name = "merge2"
+path = "src/lib.rs"
 
 [dependencies]
-merge2_derive = { path = "merge2_derive", version = "0.1.0", optional = true }
+merge2_derive = { path = "merge2_derive", version = "0.1", optional = true }
 num-traits = { version = "0.2.12", optional = true }
 
 [dev-dependencies]
-envy = "0.4"
-toml = "0.8"
 trybuild = "1.0"
-structopt = "0.3"
-serde = { version = "1.0", features = ["derive"] }
 
 [features]
-default = ["derive", "num", "std"]
+default = ["derive", "std"]
 derive = ["merge2_derive"]
 num = ["num-traits"]
 std = []
 
 [workspace]
-members = ["merge2_derive"]
+members = ["merge2_derive", "merge2_examples"]

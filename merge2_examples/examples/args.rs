@@ -1,11 +1,11 @@
+use clap::Parser;
 use merge2::Merge;
 use serde::Deserialize;
-use structopt::StructOpt;
 
-#[derive(Debug, Default, Deserialize, Merge, StructOpt)]
+#[derive(Debug, Default, Deserialize, Merge, Parser)]
 #[serde(default)]
 struct Args {
-    #[structopt(short, long)]
+    #[arg(short, long)]
     #[merge(strategy = ::merge2::bool::overwrite_false)]
     debug: bool,
     input: Option<String>,
@@ -29,7 +29,7 @@ fn get_env() -> Args {
 }
 
 fn main() {
-    let mut args = Args::from_args();
+    let mut args = Args::parse();
     args.merge(&mut get_env());
     if let Some(mut config) = get_config() {
         args.merge(&mut config);
