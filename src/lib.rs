@@ -241,9 +241,9 @@ pub mod num {
 
     /// Overwrite left with right if the value of left is zero.
     #[inline]
-    pub fn overwrite_zero<T: num_traits::Zero + Clone>(left: &mut T, right: &mut T) {
+    pub fn overwrite_zero<T: num_traits::Zero + Copy>(left: &mut T, right: &mut T) {
         if left.is_zero() {
-            *left = right.clone();
+            *left = *right;
         }
     }
 }
@@ -254,17 +254,17 @@ pub mod ord {
 
     /// Set left to the maximum of left and right.
     #[inline]
-    pub fn max<T: cmp::Ord + Clone>(left: &mut T, right: &mut T) {
-        if cmp::Ord::cmp(left, right) == cmp::Ordering::Less {
-            *left = right.clone();
+    pub fn max<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
+        if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Less) {
+            *left = core::mem::take(right);
         }
     }
 
     /// Set left to the minimum of left and right.
     #[inline]
-    pub fn min<T: cmp::Ord + Clone>(left: &mut T, right: &mut T) {
-        if cmp::Ord::cmp(left, right) == cmp::Ordering::Greater {
-            *left = right.clone();
+    pub fn min<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
+        if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Greater) {
+            *left = core::mem::take(right);
         }
     }
 }
