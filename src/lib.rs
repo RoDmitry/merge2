@@ -156,11 +156,13 @@ pub trait Merge {
 // Merge strategies applicable to types implementing Default
 pub mod default {
     /// Overwrite `left` with `right` regardless of their values.
+    #[inline]
     pub fn overwrite_any<T: Default>(left: &mut T, right: &mut T) {
         *left = core::mem::take(right);
     }
 
     /// Overwrite `left` with `right` if the value of `left` is equal to the default for the type.
+    #[inline]
     pub fn overwrite_default<T: Default + PartialEq>(left: &mut T, right: &mut T) {
         if *left == T::default() {
             *left = core::mem::take(right);
@@ -293,11 +295,13 @@ impl Merge for String {
 #[cfg(feature = "std")]
 pub mod string {
     /// Append the contents of right to left.
+    #[inline]
     pub fn append(left: &mut String, right: &mut str) {
         left.push_str(right);
     }
 
     /// Prepend the contents of right to left.
+    #[inline]
     pub fn prepend(left: &mut String, right: &mut String) {
         right.push_str(left);
         *left = core::mem::take(right);
@@ -360,6 +364,7 @@ pub mod hashmap {
     /// On conflict, merge elements from `right` to `left`.
     ///
     /// In other words, this gives precedence to `left`.
+    #[inline]
     pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
         let map = core::mem::take(right);
         for (k, v) in map {
