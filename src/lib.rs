@@ -165,7 +165,7 @@ pub mod default {
     #[inline]
     pub fn overwrite_default<T: Default + PartialEq>(left: &mut T, right: &mut T) {
         if *left == T::default() {
-            *left = core::mem::take(right);
+            core::mem::swap(left, right);
         }
     }
 }
@@ -175,7 +175,7 @@ impl<T> Merge for Option<T> {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_none() {
-            *self = right.take();
+            core::mem::swap(self, right);
         }
     }
 }
@@ -274,7 +274,7 @@ impl Merge for &str {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::take(right);
+            core::mem::swap(self, right);
         }
     }
 }
@@ -284,7 +284,7 @@ impl Merge for String {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::take(right);
+            core::mem::swap(self, right);
         }
     }
 }
@@ -296,8 +296,9 @@ impl Merge for String {
 pub mod string {
     /// Append the contents of right to left.
     #[inline]
-    pub fn append(left: &mut String, right: &mut str) {
-        left.push_str(right);
+    pub fn append(left: &mut String, right: &mut String) {
+        let new = core::mem::take(right);
+        left.push_str(&new);
     }
 
     /// Prepend the contents of right to left.
@@ -313,7 +314,7 @@ impl<T> Merge for Vec<T> {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::take(right);
+            core::mem::swap(self, right);
         }
     }
 }
@@ -327,7 +328,7 @@ pub mod vec {
     #[inline]
     pub fn append<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
         if left.is_empty() {
-            *left = core::mem::take(right);
+            core::mem::swap(left, right);
         } else {
             left.append(right);
         }
@@ -337,7 +338,7 @@ pub mod vec {
     #[inline]
     pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
         right.append(left);
-        *left = core::mem::take(right);
+        core::mem::swap(left, right);
     }
 }
 
@@ -348,7 +349,7 @@ impl<K, V> Merge for HashMap<K, V> {
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_empty() {
-            *self = core::mem::take(right);
+            core::mem::swap(self, right);
         }
     }
 }
