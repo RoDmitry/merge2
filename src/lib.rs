@@ -191,12 +191,12 @@ pub mod option {
     /// On conflict, recursively merge the elements.
     #[inline]
     pub fn recursive<T: super::Merge>(left: &mut Option<T>, right: &mut Option<T>) {
-        if let Some(mut new) = right.take() {
-            if let Some(original) = left {
-                original.merge(&mut new);
-            } else {
-                *left = Some(new);
+        if let Some(original) = left {
+            if let Some(new) = right {
+                original.merge(new);
             }
+        } else {
+            core::mem::swap(left, right);
         }
     }
 }
