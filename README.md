@@ -1,5 +1,8 @@
 # Merge2
 
+[![Crate](https://img.shields.io/crates/v/merge2.svg)](https://crates.io/crates/merge2)
+[![API](https://docs.rs/merge2/badge.svg)](https://docs.rs/merge2)
+
 Provides `Merge` trait that can be used to merge structs into single by it's values:
 
 ```rust
