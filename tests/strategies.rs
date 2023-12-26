@@ -100,9 +100,9 @@ fn test_num_saturating_add() {
 }
 
 #[test]
-fn test_ord_max_def() {
+fn test_ord_max() {
     #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::ord::max_def)] u8);
+    struct S(#[merge(strategy = ::merge2::ord::max)] u8);
 
     test(S(2), S(1), S(2));
     test(S(2), S(2), S(1));
@@ -113,9 +113,9 @@ fn test_ord_max_def() {
 }
 
 #[test]
-fn test_ord_min_def() {
+fn test_ord_min() {
     #[derive(Debug, Merge, PartialEq)]
-    struct S(#[merge(strategy = ::merge2::ord::min_def)] u8);
+    struct S(#[merge(strategy = ::merge2::ord::min)] u8);
 
     test(S(1), S(1), S(2));
     test(S(1), S(2), S(1));

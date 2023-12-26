@@ -250,25 +250,9 @@ pub mod num {
 pub mod ord {
     use core::cmp;
 
-    /// Set `left` as `right` if `left` is Less than `right`, set `right` as Default
-    #[inline]
-    pub fn max_def<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
-        if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Less) {
-            *left = core::mem::take(right);
-        }
-    }
-
-    /// Set `left` as `right` if `left` is Greater than `right`, set `right` as Default
-    #[inline]
-    pub fn min_def<T: cmp::PartialOrd + Default>(left: &mut T, right: &mut T) {
-        if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Greater) {
-            *left = core::mem::take(right);
-        }
-    }
-
     /// Swap elements if `left` is Less than `right`.
     #[inline]
-    pub fn max_swap<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
+    pub fn max<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
         if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Less) {
             core::mem::swap(left, right);
         }
@@ -276,7 +260,7 @@ pub mod ord {
 
     /// Swap elements if `left` is Greater than `right`.
     #[inline]
-    pub fn min_swap<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
+    pub fn min<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
         if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Greater) {
             core::mem::swap(left, right);
         }
@@ -311,15 +295,23 @@ pub mod string {
     /// Append the contents of right to left.
     #[inline]
     pub fn append(left: &mut String, right: &mut String) {
-        let new = core::mem::take(right);
-        left.push_str(&new);
+        if left.is_empty() {
+            core::mem::swap(left, right);
+        } else {
+            let new = core::mem::take(right);
+            left.push_str(&new);
+        }
     }
 
     /// Prepend the contents of right to left.
     #[inline]
     pub fn prepend(left: &mut String, right: &mut String) {
-        right.push_str(left);
-        *left = core::mem::take(right);
+        if left.is_empty() {
+            core::mem::swap(left, right);
+        } else if !right.is_empty() {
+            right.push_str(left);
+            *left = core::mem::take(right);
+        }
     }
 }
 
@@ -351,8 +343,12 @@ pub mod vec {
     /// Prepend the contents of right to left.
     #[inline]
     pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
-        right.append(left);
-        core::mem::swap(left, right);
+        if left.is_empty() {
+            core::mem::swap(left, right);
+        } else if !right.is_empty() {
+            right.append(left);
+            core::mem::swap(left, right);
+        }
     }
 }
 
