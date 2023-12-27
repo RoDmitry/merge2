@@ -155,13 +155,13 @@ pub trait Merge: Sized {
 
 // Merge strategies applicable to any types
 pub mod any {
-    /// Overwrite `left` with `right` regardless of their values.
+    /// Overwrite `left` with `right` regardless of their values. Sets `right` to a Default value.
     #[inline]
     pub fn overwrite<T: Default>(left: &mut T, right: &mut T) {
         *left = core::mem::take(right);
     }
 
-    /// Overwrite `left` with `right` if the value of `left` is equal to the default for the type.
+    /// Overwrite `left` with `right` if the value of `left` is equal to the Default for the type.
     #[inline]
     pub fn overwrite_default<T: Default + PartialEq>(left: &mut T, right: &mut T) {
         if *left == T::default() {

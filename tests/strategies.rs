@@ -46,6 +46,7 @@ fn test_option_overwrite_none() {
     struct S(Option<u8>);
 
     test(S(Some(1)), S(Some(1)), S(Some(2)));
+    test(S(Some(1)), S(Some(1)), S(None));
     test(S(Some(2)), S(None), S(Some(2)));
     test(S(None), S(None), S(None));
 }
@@ -131,12 +132,25 @@ mod string {
     use crate::Merge;
 
     #[test]
+    fn test_str_overwrite_empty() {
+        #[derive(Debug, Merge, PartialEq)]
+        struct S<'a>(&'a str);
+
+        test(S(""), S(""), S(""));
+        test(S("1"), S(""), S("1"));
+        test(S("0"), S("0"), S(""));
+        test(S("0"), S("0"), S("1"));
+        test(S("255"), S("255"), S("10"));
+    }
+
+    #[test]
     fn test_string_overwrite_empty() {
         #[derive(Debug, Merge, PartialEq)]
         struct S(String);
 
         test(S("".to_owned()), S("".to_owned()), S("".to_owned()));
         test(S("1".to_owned()), S("".to_owned()), S("1".to_owned()));
+        test(S("0".to_owned()), S("0".to_owned()), S("".to_owned()));
         test(S("0".to_owned()), S("0".to_owned()), S("1".to_owned()));
         test(S("255".to_owned()), S("255".to_owned()), S("10".to_owned()));
     }
@@ -148,6 +162,7 @@ mod string {
 
         test(S("".to_owned()), S("".to_owned()), S("".to_owned()));
         test(S("1".to_owned()), S("".to_owned()), S("1".to_owned()));
+        test(S("0".to_owned()), S("0".to_owned()), S("".to_owned()));
         test(S("01".to_owned()), S("0".to_owned()), S("1".to_owned()));
         test(
             S("25510".to_owned()),
@@ -173,6 +188,7 @@ mod string {
 
         test(S("".to_owned()), S("".to_owned()), S("".to_owned()));
         test(S("1".to_owned()), S("".to_owned()), S("1".to_owned()));
+        test(S("0".to_owned()), S("0".to_owned()), S("".to_owned()));
         test(S("10".to_owned()), S("0".to_owned()), S("1".to_owned()));
         test(
             S("10255".to_owned()),
@@ -204,6 +220,7 @@ mod vec {
 
         test(S(vec![]), S(vec![]), S(vec![]));
         test(S(vec![1]), S(vec![]), S(vec![1]));
+        test(S(vec![0]), S(vec![0]), S(vec![]));
         test(S(vec![0]), S(vec![0]), S(vec![1]));
         test(S(vec![255]), S(vec![255]), S(vec![10]));
     }
@@ -215,6 +232,7 @@ mod vec {
 
         test(S(vec![]), S(vec![]), S(vec![]));
         test(S(vec![1]), S(vec![]), S(vec![1]));
+        test(S(vec![0]), S(vec![0]), S(vec![]));
         test(S(vec![0, 1]), S(vec![0]), S(vec![1]));
         test(S(vec![255, 10]), S(vec![255]), S(vec![10]));
         test(S(vec![0, 1, 2, 3, 4]), S(vec![0, 1, 2]), S(vec![3, 4]));
@@ -228,6 +246,7 @@ mod vec {
 
         test(S(vec![]), S(vec![]), S(vec![]));
         test(S(vec![1]), S(vec![]), S(vec![1]));
+        test(S(vec![0]), S(vec![0]), S(vec![]));
         test(S(vec![1, 0]), S(vec![0]), S(vec![1]));
         test(S(vec![10, 255]), S(vec![255]), S(vec![10]));
         test(S(vec![3, 4, 0, 1, 2]), S(vec![0, 1, 2]), S(vec![3, 4]));
@@ -260,10 +279,33 @@ mod hashmap {
     }
 
     #[test]
+    fn test_overwrite_empty() {
+        #[derive(Debug, Merge, PartialEq)]
+        struct S(HashMap<u8, u8>);
+
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(HashMap::default()),
+        );
+        test(S(map! {1 => 2}), S(HashMap::default()), S(map! {1 => 2}));
+        test(S(map! {1 => 1}), S(map! {1 => 1}), S(HashMap::default()));
+        test(S(map! {1 => 1}), S(map! {1 => 1}), S(map! {1 => 2}));
+        test(S(map! {1 => 2}), S(map! {1 => 2}), S(map! {1 => 1}));
+    }
+
+    #[test]
     fn test_merge() {
         #[derive(Debug, Merge, PartialEq)]
         struct S(#[merge(strategy = ::merge2::hashmap::merge)] HashMap<u8, u8>);
 
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(HashMap::default()),
+        );
+        test(S(map! {1 => 2}), S(HashMap::default()), S(map! {1 => 2}));
+        test(S(map! {1 => 1}), S(map! {1 => 1}), S(HashMap::default()));
         test(S(map! {1 => 1}), S(map! {1 => 1}), S(map! {1 => 2}));
         test(S(map! {1 => 2}), S(map! {1 => 2}), S(map! {1 => 1}));
         test(S(map! {0 => 1, 1 => 2}), S(map! {0 => 1}), S(map! {1 => 2}));
@@ -274,6 +316,13 @@ mod hashmap {
         #[derive(Debug, Merge, PartialEq)]
         struct S(#[merge(strategy = ::merge2::hashmap::replace)] HashMap<u8, u8>);
 
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(HashMap::default()),
+        );
+        test(S(map! {1 => 2}), S(HashMap::default()), S(map! {1 => 2}));
+        test(S(map! {1 => 1}), S(map! {1 => 1}), S(HashMap::default()));
         test(S(map! {1 => 2}), S(map! {1 => 1}), S(map! {1 => 2}));
         test(S(map! {1 => 1}), S(map! {1 => 2}), S(map! {1 => 1}));
         test(S(map! {0 => 1, 1 => 2}), S(map! {0 => 1}), S(map! {1 => 2}));
@@ -288,6 +337,21 @@ mod hashmap {
         #[derive(Debug, Merge, PartialEq)]
         struct S(#[merge(strategy = ::merge2::hashmap::recursive)] HashMap<u8, N>);
 
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(HashMap::default()),
+        );
+        test(
+            S(map! {1 => N(2)}),
+            S(HashMap::default()),
+            S(map! {1 => N(2)}),
+        );
+        test(
+            S(map! {1 => N(1)}),
+            S(map! {1 => N(1)}),
+            S(HashMap::default()),
+        );
         test(
             S(map! {1 => N(3)}),
             S(map! {1 => N(1)}),
@@ -314,6 +378,21 @@ mod hashmap {
         #[derive(Debug, Merge, PartialEq)]
         struct S(#[merge(strategy = ::merge2::hashmap::intersection)] HashMap<u8, N>);
 
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(HashMap::default()),
+        );
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(map! {1 => N(2)}),
+        );
+        test(
+            S(map! {1 => N(1)}),
+            S(map! {1 => N(1)}),
+            S(HashMap::default()),
+        );
         test(
             S(map! {1 => N(3)}),
             S(map! {1 => N(1)}),
