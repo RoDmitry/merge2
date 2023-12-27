@@ -4,13 +4,13 @@ exclude = [".github/*", "tests/*"]
 keywords = ["struct", "merge", "combine", "macros", "derive"]
 name = "merge2"
 readme = "README.md"
+version = "0.3.0"
 authors.workspace = true
 categories.workspace = true
 documentation.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
-version.workspace = true
 
 [workspace.package]
 authors = ["Dmitry Rodionov <gh@rdmtr.com>"]
@@ -19,7 +19,6 @@ documentation = "https://docs.rs/merge2/"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/RoDmitry/merge2"
-version = "0.2.0"
 
 [lib]
 name = "merge2"
