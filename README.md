@@ -58,7 +58,7 @@ This crate has the following features:
 
 -   `derive` (default): Enables the derive macro for the `Merge` trait using the
     `merge_derive` crate.
--   `num` (default): Enables the merge strategies in the `num` module that
+-   `num`: Enables the merge strategies in the `num` module that
     require the `num_traits` crate.
 -   `std` (default): Enables the merge strategies for the `hashmap` and `vec`
     that require the standard library. If this feature is not set,

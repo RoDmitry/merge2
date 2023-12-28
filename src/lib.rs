@@ -24,7 +24,7 @@
 //!
 //! - `derive` (default):  Enables the derive macro for the `Merge` trait using the `merge_derive`
 //!   crate.
-//! - `num` (default): Enables the merge strategies in the `num` module that require the
+//! - `num`: Enables the merge strategies in the `num` module that require the
 //!   `num_traits` crate.
 //! - `std` (default): Enables the merge strategies in the `hashmap` and `vec` modules that require
 //!    the standard library.  If this feature is not set, `merge2` is a `no_std`.
@@ -153,9 +153,10 @@ pub trait Merge: Sized {
     fn merge(&mut self, other: &mut Self);
 }
 
-// Merge strategies applicable to any types
+/// Merge strategies applicable to any types
 pub mod any {
     /// Overwrite `left` with `right` regardless of their values. Sets `right` to a Default value.
+    /// Swap would be faster, if you don't need default.
     #[inline]
     pub fn overwrite<T: Default>(left: &mut T, right: &mut T) {
         *left = core::mem::take(right);
