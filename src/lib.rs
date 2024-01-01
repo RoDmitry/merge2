@@ -203,18 +203,15 @@ pub mod option {
 }
 
 macro_rules! skip_merge {
-    ($typ: ident) => {
-        impl Merge for $typ {
+    ($($t:ty)*) => {$(
+        impl Merge for $t {
             #[inline(always)]
             fn merge(&mut self, _: &mut Self) {}
         }
-    };
-    ($($typ: ident),*) => {
-        $(skip_merge!($typ);)*
-    };
+    )*};
 }
 
-skip_merge!(u8, i8, u16, i16, u32, i32, u64, i64, usize, isize, u128, i128, f32, f64, bool);
+skip_merge!(u8 i8 u16 i16 u32 i32 usize isize u64 i64 u128 i128 f32 f64 bool);
 
 /// Merge strategies for boolean types.
 pub mod bool {
