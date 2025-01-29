@@ -1,9 +1,9 @@
 [package]
+name = "merge2"
 description = "Merge structs into single by values"
 documentation = "https://docs.rs/merge2/"
 exclude = [".github/*", "tests/*"]
 keywords = ["struct", "merge", "combine", "macros", "derive"]
-name = "merge2"
 readme = "README.md"
 version = "0.3.0"
 authors.workspace = true
@@ -11,6 +11,10 @@ categories.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [workspace.package]
 authors = ["Dmitry Rodionov <gh@rdmtr.com>"]
@@ -25,7 +29,7 @@ path = "src/lib.rs"
 
 [dependencies]
 merge2_derive = { path = "merge2_derive", version = "0.2", optional = true }
-num-traits = { version = "0.2.12", optional = true }
+num-traits = { version = "0.2", optional = true }
 
 [dev-dependencies]
 trybuild = "1.0"
@@ -37,4 +41,4 @@ num = ["num-traits"]
 std = []
 
 [workspace]
-members = ["merge2_derive", "merge2_examples"]
+members = ["merge2_derive"]

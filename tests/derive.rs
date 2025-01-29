@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 #![cfg(feature = "derive")]
 
 use merge2::Merge;

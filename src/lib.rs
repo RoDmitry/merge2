@@ -66,6 +66,7 @@
 //! [`Merge`]: trait.Merge.html
 //! [`args.rs`]: https://github.com/RoDmitry/merge2/blob/main/examples/args.rs
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "derive")]
@@ -233,8 +234,7 @@ pub mod bool {
 }
 
 /// Merge strategies for numeric types.
-///
-/// These strategies are only available if the `num` feature is enabled.
+#[cfg_attr(docsrs, doc(cfg(feature = "num")))]
 #[cfg(feature = "num")]
 pub mod num {
     /// Set left to the saturated some of left and right.
