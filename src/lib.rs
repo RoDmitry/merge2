@@ -69,6 +69,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
 #[cfg(feature = "derive")]
 pub use merge2_derive::*;
 
@@ -265,160 +266,154 @@ pub mod ord {
     }
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 #[cfg(feature = "std")]
-impl Merge for &str {
-    #[inline]
-    fn merge(&mut self, right: &mut Self) {
-        if self.is_empty() {
-            core::mem::swap(self, right);
-        }
-    }
-}
+mod std {
+    use super::Merge;
 
-#[cfg(feature = "std")]
-impl Merge for String {
-    #[inline]
-    fn merge(&mut self, right: &mut Self) {
-        if self.is_empty() {
-            core::mem::swap(self, right);
-        }
-    }
-}
-
-/// Merge strategies for strings.
-///
-/// These strategies are only available if the `std` feature is enabled.
-#[cfg(feature = "std")]
-pub mod string {
-    /// Append the contents of right to left.
-    #[inline]
-    pub fn append(left: &mut String, right: &mut String) {
-        if left.is_empty() {
-            core::mem::swap(left, right);
-        } else {
-            let new = core::mem::take(right);
-            left.push_str(&new);
+    impl Merge for &str {
+        #[inline]
+        fn merge(&mut self, right: &mut Self) {
+            if self.is_empty() {
+                core::mem::swap(self, right);
+            }
         }
     }
 
-    /// Prepend the contents of right to left.
-    #[inline]
-    pub fn prepend(left: &mut String, right: &mut String) {
-        if left.is_empty() {
-            core::mem::swap(left, right);
-        } else if !right.is_empty() {
-            right.push_str(left);
-            *left = core::mem::take(right);
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl<T> Merge for Vec<T> {
-    #[inline]
-    fn merge(&mut self, right: &mut Self) {
-        if self.is_empty() {
-            core::mem::swap(self, right);
-        }
-    }
-}
-
-/// Merge strategies for vectors.
-///
-/// These strategies are only available if the `std` feature is enabled.
-#[cfg(feature = "std")]
-pub mod vec {
-    /// Append the contents of right to left.
-    #[inline]
-    pub fn append<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
-        if left.is_empty() {
-            core::mem::swap(left, right);
-        } else {
-            left.append(right);
+    impl Merge for String {
+        #[inline]
+        fn merge(&mut self, right: &mut Self) {
+            if self.is_empty() {
+                core::mem::swap(self, right);
+            }
         }
     }
 
-    /// Prepend the contents of right to left.
-    #[inline]
-    pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
-        if left.is_empty() {
-            core::mem::swap(left, right);
-        } else if !right.is_empty() {
-            right.append(left);
-            core::mem::swap(left, right);
+    /// Merge strategies for strings.
+    pub mod string {
+        /// Append the contents of right to left.
+        #[inline]
+        pub fn append(left: &mut String, right: &mut String) {
+            if left.is_empty() {
+                core::mem::swap(left, right);
+            } else {
+                let new = core::mem::take(right);
+                left.push_str(&new);
+            }
         }
-    }
-}
 
-#[cfg(feature = "std")]
-use std::collections::HashMap;
-#[cfg(feature = "std")]
-impl<K, V> Merge for HashMap<K, V> {
-    #[inline]
-    fn merge(&mut self, right: &mut Self) {
-        if self.is_empty() {
-            core::mem::swap(self, right);
-        }
-    }
-}
-
-/// Merge strategies for hash maps.
-///
-/// These strategies are only available if the `std` feature is enabled.
-#[cfg(feature = "std")]
-pub mod hashmap {
-    use super::HashMap;
-    use std::hash::Hash;
-
-    /// On conflict, merge elements from `right` to `left`.
-    ///
-    /// In other words, this gives precedence to `left`.
-    #[inline]
-    pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
-        let map = core::mem::take(right);
-        for (k, v) in map {
-            left.entry(k).or_insert(v);
+        /// Prepend the contents of right to left.
+        #[inline]
+        pub fn prepend(left: &mut String, right: &mut String) {
+            if left.is_empty() {
+                core::mem::swap(left, right);
+            } else if !right.is_empty() {
+                right.push_str(left);
+                *left = core::mem::take(right);
+            }
         }
     }
 
-    /// On conflict, replace elements of `left` with `right`.
-    ///
-    /// In other words, this gives precedence to `right`.
-    #[inline]
-    pub fn replace<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
-        left.extend(core::mem::take(right))
+    impl<T> Merge for Vec<T> {
+        #[inline]
+        fn merge(&mut self, right: &mut Self) {
+            if self.is_empty() {
+                core::mem::swap(self, right);
+            }
+        }
     }
 
-    /// On conflict, recursively merge the elements.
-    pub fn recursive<K: Eq + Hash, V: super::Merge>(
-        left: &mut HashMap<K, V>,
-        right: &mut HashMap<K, V>,
-    ) {
-        use std::collections::hash_map::Entry;
+    /// Merge strategies for vectors.
+    pub mod vec {
+        /// Append the contents of right to left.
+        #[inline]
+        pub fn append<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
+            if left.is_empty() {
+                core::mem::swap(left, right);
+            } else {
+                left.append(right);
+            }
+        }
 
-        let map = core::mem::take(right);
-        for (k, mut v) in map {
-            match left.entry(k) {
-                Entry::Occupied(mut existing) => existing.get_mut().merge(&mut v),
-                Entry::Vacant(empty) => {
-                    empty.insert(v);
+        /// Prepend the contents of right to left.
+        #[inline]
+        pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
+            if left.is_empty() {
+                core::mem::swap(left, right);
+            } else if !right.is_empty() {
+                right.append(left);
+                core::mem::swap(left, right);
+            }
+        }
+    }
+
+    use ::std::collections::HashMap;
+    impl<K, V> Merge for HashMap<K, V> {
+        #[inline]
+        fn merge(&mut self, right: &mut Self) {
+            if self.is_empty() {
+                core::mem::swap(self, right);
+            }
+        }
+    }
+
+    /// Merge strategies for hash maps.
+    pub mod hashmap {
+        use super::HashMap;
+        use ::std::hash::Hash;
+
+        /// On conflict, merge elements from `right` to `left`.
+        ///
+        /// In other words, this gives precedence to `left`.
+        #[inline]
+        pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
+            let map = core::mem::take(right);
+            for (k, v) in map {
+                left.entry(k).or_insert(v);
+            }
+        }
+
+        /// On conflict, replace elements of `left` with `right`.
+        ///
+        /// In other words, this gives precedence to `right`.
+        #[inline]
+        pub fn replace<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
+            left.extend(core::mem::take(right))
+        }
+
+        /// On conflict, recursively merge the elements.
+        pub fn recursive<K: Eq + Hash, V: super::Merge>(
+            left: &mut HashMap<K, V>,
+            right: &mut HashMap<K, V>,
+        ) {
+            use ::std::collections::hash_map::Entry;
+
+            let map = core::mem::take(right);
+            for (k, mut v) in map {
+                match left.entry(k) {
+                    Entry::Occupied(mut existing) => existing.get_mut().merge(&mut v),
+                    Entry::Vacant(empty) => {
+                        empty.insert(v);
+                    }
+                }
+            }
+        }
+
+        /// Merge recursively elements only if the key is present in `left` and `right`.
+        pub fn intersection<K: Eq + Hash, V: super::Merge>(
+            left: &mut HashMap<K, V>,
+            right: &mut HashMap<K, V>,
+        ) {
+            use ::std::collections::hash_map::Entry;
+
+            let map = core::mem::take(right);
+            for (k, mut v) in map {
+                if let Entry::Occupied(mut existing) = left.entry(k) {
+                    existing.get_mut().merge(&mut v);
                 }
             }
         }
     }
-
-    /// Merge recursively elements only if the key is present in `left` and `right`.
-    pub fn intersection<K: Eq + Hash, V: super::Merge>(
-        left: &mut HashMap<K, V>,
-        right: &mut HashMap<K, V>,
-    ) {
-        use std::collections::hash_map::Entry;
-
-        let map = core::mem::take(right);
-        for (k, mut v) in map {
-            if let Entry::Occupied(mut existing) = left.entry(k) {
-                existing.get_mut().merge(&mut v);
-            }
-        }
-    }
 }
+
+pub use std::*;

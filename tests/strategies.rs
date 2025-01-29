@@ -258,7 +258,7 @@ mod vec {
 mod hashmap {
     use super::test;
     use crate::Merge;
-    use std::collections::HashMap;
+    use ::std::collections::HashMap;
 
     /// A macro to create a HashMap.
     ///
