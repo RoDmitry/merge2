@@ -5,7 +5,7 @@ documentation = "https://docs.rs/merge2/"
 exclude = [".github/*", "tests/*"]
 keywords = ["struct", "merge", "combine", "macros", "derive"]
 readme = "README.md"
-version = "0.3.0"
+version = "0.3.1"
 authors.workspace = true
 categories.workspace = true
 edition.workspace = true
@@ -28,7 +28,7 @@ name = "merge2"
 path = "src/lib.rs"
 
 [dependencies]
-merge2_derive = { path = "merge2_derive", version = "0.2", optional = true }
+merge2_derive = { path = "merge2_derive", version = "0.3", optional = true }
 num-traits = { version = "0.2", optional = true }
 
 [dev-dependencies]
