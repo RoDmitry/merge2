@@ -312,6 +312,23 @@ mod hashmap {
     }
 
     #[test]
+    fn test_merge_ahash() {
+        #[derive(Debug, Merge, PartialEq)]
+        struct S(#[merge(strategy = ::merge2::hashmap::merge)] HashMap<u8, u8, ahash::RandomState>);
+
+        test(
+            S(HashMap::default()),
+            S(HashMap::default()),
+            S(HashMap::default()),
+        );
+        test(S(map! {1 => 2}), S(HashMap::default()), S(map! {1 => 2}));
+        test(S(map! {1 => 1}), S(map! {1 => 1}), S(HashMap::default()));
+        test(S(map! {1 => 1}), S(map! {1 => 1}), S(map! {1 => 2}));
+        test(S(map! {1 => 2}), S(map! {1 => 2}), S(map! {1 => 1}));
+        test(S(map! {0 => 1, 1 => 2}), S(map! {0 => 1}), S(map! {1 => 2}));
+    }
+
+    #[test]
     fn test_replace() {
         #[derive(Debug, Merge, PartialEq)]
         struct S(#[merge(strategy = ::merge2::hashmap::replace)] HashMap<u8, u8>);

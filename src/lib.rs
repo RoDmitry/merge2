@@ -151,7 +151,7 @@ pub use merge2_derive::*;
 /// }, val);
 /// ```
 pub trait Merge: Sized {
-    /// Merge another object into this object.
+    /// Merge another object into this object
     fn merge(&mut self, other: &mut Self);
 }
 
@@ -161,37 +161,37 @@ pub mod any {
     /// Swap would be faster, if you don't need default.
     #[inline]
     pub fn overwrite<T: Default>(left: &mut T, right: &mut T) {
-        *left = core::mem::take(right);
+        *left = ::core::mem::take(right);
     }
 
-    /// Overwrite `left` with `right` if the value of `left` is equal to the Default for the type.
+    /// Overwrite `left` with `right` if the value of `left` is equal to the Default for the type
     #[inline]
     pub fn overwrite_default<T: Default + PartialEq>(left: &mut T, right: &mut T) {
         if *left == T::default() {
-            core::mem::swap(left, right);
+            ::core::mem::swap(left, right);
         }
     }
 
-    /// Swap `left` and `right` regardless of their values.
+    /// Swap `left` and `right` regardless of their values
     #[inline]
     pub fn swap<T>(left: &mut T, right: &mut T) {
-        core::mem::swap(left, right);
+        ::core::mem::swap(left, right);
     }
 }
 
 impl<T> Merge for Option<T> {
-    /// Overwrite `option` only if it is `None`
+    /// Overwrite `Option` only if it is `None`
     #[inline]
     fn merge(&mut self, right: &mut Self) {
         if self.is_none() {
-            core::mem::swap(self, right);
+            ::core::mem::swap(self, right);
         }
     }
 }
 
 /// Merge strategies for `Option`
 pub mod option {
-    /// On conflict, recursively merge the elements.
+    /// On conflict, recursively merge the elements
     #[inline]
     pub fn recursive<T: super::Merge>(left: &mut Option<T>, right: &mut Option<T>) {
         if let Some(original) = left {
@@ -199,7 +199,7 @@ pub mod option {
                 original.merge(new);
             }
         } else {
-            core::mem::swap(left, right);
+            ::core::mem::swap(left, right);
         }
     }
 }
@@ -215,9 +215,9 @@ macro_rules! skip_merge {
 
 skip_merge!(u8 i8 u16 i16 u32 i32 usize isize u64 i64 u128 i128 f32 f64 bool);
 
-/// Merge strategies for boolean types.
+/// Merge strategies for `bool`
 pub mod bool {
-    /// Overwrite left with right if the value of left is false.
+    /// Overwrite left with right if the value of left is false
     #[inline]
     pub fn overwrite_false(left: &mut bool, right: &mut bool) {
         if !*left {
@@ -225,7 +225,7 @@ pub mod bool {
         }
     }
 
-    /// Overwrite left with right if the value of left is true.
+    /// Overwrite left with right if the value of left is true
     #[inline]
     pub fn overwrite_true(left: &mut bool, right: &mut bool) {
         if *left {
@@ -234,34 +234,34 @@ pub mod bool {
     }
 }
 
-/// Merge strategies for numeric types.
+/// Merge strategies for numeric types
 #[cfg_attr(docsrs, doc(cfg(feature = "num")))]
 #[cfg(feature = "num")]
 pub mod num {
-    /// Set left to the saturated some of left and right.
+    /// Set left to the saturated some of left and right
     #[inline]
     pub fn saturating_add<T: num_traits::SaturatingAdd>(left: &mut T, right: &mut T) {
         *left = left.saturating_add(right);
     }
 }
 
-/// Merge strategies for types that form a total order.
+/// Merge strategies for types that can be compared (`PartialOrd`)
 pub mod ord {
-    use core::cmp;
+    use ::core::cmp;
 
-    /// Swap elements if `left` is Less than `right`.
+    /// Swap elements if `left` is Less than `right`
     #[inline]
     pub fn max<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
         if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Less) {
-            core::mem::swap(left, right);
+            ::core::mem::swap(left, right);
         }
     }
 
-    /// Swap elements if `left` is Greater than `right`.
+    /// Swap elements if `left` is Greater than `right`
     #[inline]
     pub fn min<T: cmp::PartialOrd>(left: &mut T, right: &mut T) {
         if cmp::PartialOrd::partial_cmp(left, right) == Some(cmp::Ordering::Greater) {
-            core::mem::swap(left, right);
+            ::core::mem::swap(left, right);
         }
     }
 }
@@ -275,7 +275,7 @@ mod std {
         #[inline]
         fn merge(&mut self, right: &mut Self) {
             if self.is_empty() {
-                core::mem::swap(self, right);
+                ::core::mem::swap(self, right);
             }
         }
     }
@@ -284,32 +284,32 @@ mod std {
         #[inline]
         fn merge(&mut self, right: &mut Self) {
             if self.is_empty() {
-                core::mem::swap(self, right);
+                ::core::mem::swap(self, right);
             }
         }
     }
 
-    /// Merge strategies for strings.
+    /// Merge strategies for `String`
     pub mod string {
-        /// Append the contents of right to left.
+        /// Append the contents of right to left
         #[inline]
         pub fn append(left: &mut String, right: &mut String) {
             if left.is_empty() {
-                core::mem::swap(left, right);
+                ::core::mem::swap(left, right);
             } else {
-                let new = core::mem::take(right);
+                let new = ::core::mem::take(right);
                 left.push_str(&new);
             }
         }
 
-        /// Prepend the contents of right to left.
+        /// Prepend the contents of right to left
         #[inline]
         pub fn prepend(left: &mut String, right: &mut String) {
             if left.is_empty() {
-                core::mem::swap(left, right);
+                ::core::mem::swap(left, right);
             } else if !right.is_empty() {
                 right.push_str(left);
-                *left = core::mem::take(right);
+                *left = ::core::mem::take(right);
             }
         }
     }
@@ -318,31 +318,31 @@ mod std {
         #[inline]
         fn merge(&mut self, right: &mut Self) {
             if self.is_empty() {
-                core::mem::swap(self, right);
+                ::core::mem::swap(self, right);
             }
         }
     }
 
-    /// Merge strategies for vectors.
+    /// Merge strategies for `Vec`
     pub mod vec {
-        /// Append the contents of right to left.
+        /// Append the contents of right to left
         #[inline]
         pub fn append<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
             if left.is_empty() {
-                core::mem::swap(left, right);
+                ::core::mem::swap(left, right);
             } else {
                 left.append(right);
             }
         }
 
-        /// Prepend the contents of right to left.
+        /// Prepend the contents of right to left
         #[inline]
         pub fn prepend<T>(left: &mut Vec<T>, right: &mut Vec<T>) {
             if left.is_empty() {
-                core::mem::swap(left, right);
+                ::core::mem::swap(left, right);
             } else if !right.is_empty() {
                 right.append(left);
-                core::mem::swap(left, right);
+                ::core::mem::swap(left, right);
             }
         }
     }
@@ -352,22 +352,26 @@ mod std {
         #[inline]
         fn merge(&mut self, right: &mut Self) {
             if self.is_empty() {
-                core::mem::swap(self, right);
+                ::core::mem::swap(self, right);
             }
         }
     }
 
-    /// Merge strategies for hash maps.
+    /// Merge strategies for `HashMap`
     pub mod hashmap {
         use super::HashMap;
-        use ::std::hash::Hash;
+        use ::core::hash::BuildHasher;
+        use ::core::hash::Hash;
 
         /// On conflict, merge elements from `right` to `left`.
         ///
         /// In other words, this gives precedence to `left`.
         #[inline]
-        pub fn merge<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
-            let map = core::mem::take(right);
+        pub fn merge<K: Eq + Hash, V, S: BuildHasher + Default>(
+            left: &mut HashMap<K, V, S>,
+            right: &mut HashMap<K, V, S>,
+        ) {
+            let map = ::core::mem::take(right);
             for (k, v) in map {
                 left.entry(k).or_insert(v);
             }
@@ -377,18 +381,21 @@ mod std {
         ///
         /// In other words, this gives precedence to `right`.
         #[inline]
-        pub fn replace<K: Eq + Hash, V>(left: &mut HashMap<K, V>, right: &mut HashMap<K, V>) {
-            left.extend(core::mem::take(right))
+        pub fn replace<K: Eq + Hash, V, S: BuildHasher + Default>(
+            left: &mut HashMap<K, V, S>,
+            right: &mut HashMap<K, V, S>,
+        ) {
+            left.extend(::core::mem::take(right))
         }
 
-        /// On conflict, recursively merge the elements.
-        pub fn recursive<K: Eq + Hash, V: super::Merge>(
-            left: &mut HashMap<K, V>,
-            right: &mut HashMap<K, V>,
+        /// On conflict, recursively merge the elements
+        pub fn recursive<K: Eq + Hash, V: super::Merge, S: BuildHasher + Default>(
+            left: &mut HashMap<K, V, S>,
+            right: &mut HashMap<K, V, S>,
         ) {
             use ::std::collections::hash_map::Entry;
 
-            let map = core::mem::take(right);
+            let map = ::core::mem::take(right);
             for (k, mut v) in map {
                 match left.entry(k) {
                     Entry::Occupied(mut existing) => existing.get_mut().merge(&mut v),
@@ -399,14 +406,14 @@ mod std {
             }
         }
 
-        /// Merge recursively elements only if the key is present in `left` and `right`.
-        pub fn intersection<K: Eq + Hash, V: super::Merge>(
-            left: &mut HashMap<K, V>,
-            right: &mut HashMap<K, V>,
+        /// Merge recursively elements only if the key is present in `left` and `right`
+        pub fn intersection<K: Eq + Hash, V: super::Merge, S: BuildHasher + Default>(
+            left: &mut HashMap<K, V, S>,
+            right: &mut HashMap<K, V, S>,
         ) {
             use ::std::collections::hash_map::Entry;
 
-            let map = core::mem::take(right);
+            let map = ::core::mem::take(right);
             for (k, mut v) in map {
                 if let Entry::Occupied(mut existing) = left.entry(k) {
                     existing.get_mut().merge(&mut v);

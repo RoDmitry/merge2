@@ -32,6 +32,7 @@ merge2_derive = { path = "merge2_derive", version = "0.3", optional = true }
 num-traits = { version = "0.2", optional = true }
 
 [dev-dependencies]
+ahash = "0.8"
 trybuild = "1.0"
 
 [features]
