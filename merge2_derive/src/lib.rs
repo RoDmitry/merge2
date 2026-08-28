@@ -50,7 +50,7 @@ fn impl_merge(input: syn::DeriveInput, dummy: &mut TokenStream) -> manyhow::Resu
             input.generics,
         ))
     } else {
-        bail!("merge2::Merge can only be derived for structs")
+        bail!("merge2::Merge can only be derived for structs");
     }
 }
 
@@ -155,7 +155,7 @@ impl syn::parse::Parse for FieldAttr {
             let path: syn::Path = input.parse()?;
             Ok(FieldAttr::Strategy(path))
         } else {
-            bail!(name, "Unexpected attribute: {}", name)
+            bail!(name, "Unexpected attribute: {}", name);
         }
     }
 }
